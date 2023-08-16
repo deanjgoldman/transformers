@@ -574,7 +574,7 @@ class NANDConstraint():
     def update(self, token_ids: Optional[List[int]]):
         if token_ids is not None:
             for token in token_ids:
-                if isinstance(token, list):
+                if hasattr(token, '__iter__'):
                     for each in token:
                         self.add(each)
                 else:
@@ -582,6 +582,7 @@ class NANDConstraint():
         return
                     
     def add(self, token_id: int):
+            
         if not isinstance(token_id, int):
             raise ValueError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
         
