@@ -553,6 +553,7 @@ class NANDConstraint():
         self.q_constraint = DisjunctiveConstraint(q_nested_token_ids)
         
         self.completed = False
+        self.seqlen = max([c.seqlen for c in [self.p_constraint, self.q_constraint]])
 
     def advance(self):
         p_advance = self.p_constraint.advance()
