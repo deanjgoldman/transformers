@@ -33,6 +33,7 @@ else:
         "ConstraintListState",
         "DisjunctiveConstraint",
         "PhrasalConstraint",
+        "NANDConstraint"
     ]
     _import_structure["beam_search"] = [
         "BeamHypotheses",
@@ -162,7 +163,7 @@ if TYPE_CHECKING:
     except OptionalDependencyNotAvailable:
         pass
     else:
-        from .beam_constraints import Constraint, ConstraintListState, DisjunctiveConstraint, PhrasalConstraint
+        from .beam_constraints import Constraint, ConstraintListState, DisjunctiveConstraint, PhrasalConstraint, NANDConstraint
         from .beam_search import BeamHypotheses, BeamScorer, BeamSearchScorer, ConstrainedBeamSearchScorer
         from .logits_process import (
             EncoderNoRepeatNGramLogitsProcessor,

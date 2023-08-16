@@ -518,3 +518,74 @@ class ConstraintListState:
             new_state.pending_constraints = [constraint.copy() for constraint in self.pending_constraints]
 
         return new_state
+
+
+class NANDConstraint():
+    r"""
+    A class for beam scorers to track a NOT-AND expression between two disjunctive constraints.
+
+    Args:
+        p_nested_token_ids (`List[List[int]]`): a list of words, where each word is a list of ids. This constraint
+        is fulfilled by generating just one from the list of words and none from q_nested_token_ids, or none from
+        this constraint and just one from q_nested_token_ids.
+
+        q_nested_token_ids (`List[List[int]]`): a list of words, where each word is a list of ids. This constraint
+        is fulfilled by generating just one from the list of words and none from p_nested_token_ids, or none from
+        this constraint and just one from p_nested_token_ids.
+    """
+
+    def __init__(self, p_nested_token_ids: List[List[int]], q_nested_token_ids: List[List[int]]):
+
+        for nested_token_ids in [p_nested_token_ids, q_nested_token_ids]:
+            if not isinstance(nested_token_ids, list) or len(nested_token_ids) == 0:
+                raise ValueError(f"`nested_token_ids` has to be a non-empty list, but is {nested_token_ids}.")
+            if any(not isinstance(token_ids, list) for token_ids in nested_token_ids):
+                raise ValueError(f"`nested_token_ids` has to be a list of lists, but is {nested_token_ids}.")
+            if any(
+                any((not isinstance(token_id, int) or token_id < 0) for token_id in token_ids)
+                for token_ids in nested_token_ids
+            ):
+                raise ValueError(
+                    f"Each list in `nested_token_ids` has to be a list of positive integers, but is {nested_token_ids}."
+                )
+
+        self.p_constraint = DisjunctiveConstraint(p_nested_token_ids)
+        self.q_constraint = DisjunctiveConstraint(q_nested_token_ids)
+        
+        self.completed = False
+
+    def advance(self):
+        p_advance = self.p_constraint.advance()
+        q_advance = self.q_constraint.advance()
+        return [p_advance, q_advance]
+
+    def does_advance(self, token_ids: Optional[List[int]]):
+        if token_ids is not None:
+            for token_id in token_ids:
+                if self.p_constraint.does_advance(token_id) or self.q_constraint.does_advance(token_id):
+                    return True
+        return False
+
+    def reset(self):
+        self.__init__(p_nested_token_ids=self.p_constraint.token_ids, q_nested_token_ids=self.q_constraint.token_ids)
+
+    def update(self, token_ids: Optional[List[int]]):
+        if token_ids is not None:
+            for token in token_ids:
+                # completes or steps **one** constraint
+                self.add(token)
+        return
+                    
+    def add(self, token_id: int):
+        if not isinstance(token_id, int):
+            raise ValueError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
+        
+        p_completed = self.p_constraint.completed
+        if not p_completed:
+            p_stepped, p_completed, p_reset = self.p_constraint.update(token_id)
+        q_completed = self.q_constraint.completed
+        if not q_completed:
+            q_stepped, q_completed, q_reset = self.q_constraint.update(token_id)
+        
+        self.completed = completed = not (p_completed and q_completed)    
+        return completed
