@@ -582,7 +582,11 @@ class NANDConstraint():
         return
                     
     def add(self, token_id: int):
-            
+        if hasattr(token_id, '__iter__'):
+            for each in token_id:
+                self.add(each)
+            return
+        
         if not isinstance(token_id, int):
             raise ValueError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
         
