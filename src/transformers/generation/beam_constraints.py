@@ -574,8 +574,11 @@ class NANDConstraint():
     def update(self, token_ids: Optional[List[int]]):
         if token_ids is not None:
             for token in token_ids:
-                # completes or steps **one** constraint
-                self.add(token)
+                if isinstance(token, list):
+                    for each in token:
+                        self.add(each)
+                else:
+                    self.add(token)
         return
                     
     def add(self, token_id: int):
