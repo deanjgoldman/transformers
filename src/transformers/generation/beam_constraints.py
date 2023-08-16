@@ -560,11 +560,10 @@ class NANDConstraint():
         q_advance = self.q_constraint.advance()
         return [p_advance, q_advance]
 
-    def does_advance(self, token_ids: Optional[List[int]]):
-        if token_ids is not None:
-            for token_id in token_ids:
-                if self.p_constraint.does_advance(token_id) or self.q_constraint.does_advance(token_id):
-                    return True
+    def does_advance(self, token_id: int):
+        if token_id is not None:
+            if self.p_constraint.does_advance(token_id) or self.q_constraint.does_advance(token_id):
+                return True
         return False
 
     def reset(self):
