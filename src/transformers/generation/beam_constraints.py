@@ -567,7 +567,9 @@ class NANDConstraint():
         return False
 
     def reset(self):
-        self.__init__(p_nested_token_ids=self.p_constraint.token_ids, q_nested_token_ids=self.q_constraint.token_ids)
+        self.__init__(
+            p_nested_token_ids=self.p_constraint.token_ids,
+            q_nested_token_ids=self.q_constraint.token_ids)
 
     def update(self, token_ids: Optional[List[int]]):
         if token_ids is not None:
@@ -589,3 +591,15 @@ class NANDConstraint():
         
         self.completed = completed = not (p_completed and q_completed)    
         return completed
+    
+    def copy(self, stateful=False):
+        new_constraint = NANDConstraint(
+            p_nested_token_ids=self.p_constraint.token_ids,
+            q_nested_token_ids=self.q_constraint.token_ids)
+
+        if stateful:
+            new_constraint.p_constraint = self.p_constraint.copy(stateful=True)
+            new_constraint.q_constraint = self.q_constraint.copy(stateful=True)
+            new_constraint.completed = self.completed
+
+        return new_constraint
