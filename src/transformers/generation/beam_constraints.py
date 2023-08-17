@@ -577,12 +577,17 @@ class NANDConstraint():
             q_nested_token_ids=self.q_constraint.token_ids)
 
     def update(self, token_id: int):
+        
         if hasattr(token_id, '__iter__'):
             for each in token_id:
-                self.add(each)
+                stepped, complete, reset = self.update(each)
         if token_id is not None:
-            self.add(token_id)
-        return
+            p_stepped, p_completed, p_reset = self.p_constraint.update(token_id)
+            q_stepped, q_completed, q_reset = self.q_constraint.update(token_id)
+        stepped = p_stepped or q_stepped
+        self.completed = completed = not (p_completed and q_completed)
+        reset = p_reset and q_reset
+        return stepped, completed, reset
                     
     def add(self, token_id: int):
         if hasattr(token_id, '__iter__'):
